@@ -1,12 +1,22 @@
 const mysql = require('mysql2/promise');
 
+const CONSTANTS = {
+    UID: 1,
+    host: 'localhost',
+    user: 'api',
+    password: 'musicapipassword',
+    database: 'CSC315Final2021'
+}
+
+
 async function createConnection(){
     try {
+        const { host, user, password, database } = CONSTANTS
         const connection = await mysql.createConnection({
-            host: 'localhost',
-            user: 'api',
-            password: 'musicapipassword',
-            database: 'CSC315Final2021'
+            host,
+            user,
+            password,
+            database
         });
         console.log(`connected as id ${connection.threadId}`);
         return connection;
@@ -25,10 +35,11 @@ async function endConnection(conn){
         process.exit(1);
     }
 }
-const UID = 1;
+
 
 async function main(){
     const conn = await createConnection();
+    const { UID } = CONSTANTS;
 
     async function getSubGenresRegion(){
         const query = "SELECT DISTINCT sg.sgname AS 'Sub Genres', r.rname AS 'Region' FROM Sub_Genre sg JOIN Band_Styles bs ON bs.sgname = sg.sgname JOIN Bands b ON b.bname = bs.bname JOIN Band_Origins bo ON bo.bname = b.bname JOIN Country c ON c.cname = bo.cname JOIN Region r ON r.rname = c.rname;"
