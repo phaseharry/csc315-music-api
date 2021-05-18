@@ -1,7 +1,7 @@
 const mysql = require('mysql2/promise');
 
 const CONSTANTS = {
-    UID: 1,
+    uid: 1,
     host: 'localhost',
     user: 'api',
     password: 'musicapipassword',
@@ -39,7 +39,7 @@ async function endConnection(conn){
 
 async function main(){
     const conn = await createConnection();
-    const { UID } = CONSTANTS;
+    const { uid } = CONSTANTS;
 
     async function getSubGenresRegion(){
         const query = "SELECT DISTINCT sg.sgname AS 'Sub Genres', r.rname AS 'Region' FROM Sub_Genre sg JOIN Band_Styles bs ON bs.sgname = sg.sgname JOIN Bands b ON b.bname = bs.bname JOIN Band_Origins bo ON bo.bname = b.bname JOIN Country c ON c.cname = bo.cname JOIN Region r ON r.rname = c.rname;"
@@ -69,7 +69,7 @@ async function main(){
     }
 
     console.log("\n\nOther bands with the same sub genres as user 1's favorites\n");
-    const potentialBands = await getPotentialBands(UID);
+    const potentialBands = await getPotentialBands(uid);
     console.log(potentialBands)
 
     // get bands currently not in the user's favorite but have the same genres as their favorites
@@ -84,7 +84,7 @@ async function main(){
         }
     }
     console.log("\n\nOther bands with the same genres as user 1's favorites\n");
-    const potentialBandsGenres = await getPotentialBandsBasedOnGenre(UID);
+    const potentialBandsGenres = await getPotentialBandsBasedOnGenre(uid);
     console.log(potentialBandsGenres)
 
     // get users who have the same favorites as you and list their other favorite bands
@@ -99,7 +99,7 @@ async function main(){
         }
     }
     console.log("\n\nFinds other users who have the same band in their favorites, and list their other favorite bands.\n");
-    const otherFavoriteBands = await getOtherUsersFavorites(UID);
+    const otherFavoriteBands = await getOtherUsersFavorites(uid);
     console.log(otherFavoriteBands);
 
 
@@ -115,7 +115,7 @@ async function main(){
 
     }
     console.log("\n\nList other countries, excluding the user’s home country, where they could travel to where they could hear the same genres as the bands in their favorites.\n");
-    const countries = await countriesToGo(UID);
+    const countries = await countriesToGo(uid);
     console.log(countries);
 
     // Creates a new user
