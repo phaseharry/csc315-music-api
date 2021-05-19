@@ -100,8 +100,8 @@ INSERT INTO Band_Styles (bname, sgname) VALUES ('Tengger Cavalry', 'Khoomii');
 
 CREATE TABLE `User`(
 	uid INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    name CHAR(100) NOT NULL,
-    home_country CHAR(100) NOT NULL
+    	name CHAR(100) NOT NULL,
+    	home_country CHAR(100) NOT NULL
 );
 
 INSERT INTO `User` (uid, name, home_country) VALUES (1, 'Harry Chen', 'United States');
@@ -112,9 +112,9 @@ INSERT INTO `User` (uid, name, home_country) VALUES (5, 'Jason Tabs', 'United St
 
 CREATE TABLE Favorites (
 	uid INT NOT NULL,
-    band_id INT NOT NULL,
-    FOREIGN KEY (uid) REFERENCES `User`(uid),
-    FOREIGN KEY (band_id) REFERENCES Bands(bid)
+    	band_id INT NOT NULL,
+    	FOREIGN KEY (uid) REFERENCES `User`(uid),
+    	FOREIGN KEY (band_id) REFERENCES Bands(bid)
 );
 
 INSERT INTO Favorites (uid, band_id) VALUES (1, 1);
@@ -137,7 +137,13 @@ GRANT SELECT, INSERT, UPDATE ON CSC315Final2021.Favorites TO 'api'@'localhost';
 
 -- Indexes
 CREATE UNIQUE INDEX user_id USING HASH ON `User` (uid);
--- DROP INDEX user_id_on_favorites ON Favorites;
+CREATE INDEX band_name_sub_genre USING HASH ON Band_Styles (sgname);
+CREATE INDEX sub_genre_name USING HASH ON Sub_Genre (sgname);
+CREATE INDEX genre_gname USING HASH ON Genre (gname);
+CREATE INDEX band_origin_bname USING HASH ON Band_Origins (bname);
+CREATE INDEX country_cname USING HASH ON Country (cname);
+CREATE INDEX band_bname USING HASH ON Bands (bname);
+CREATE INDEX region_rname USING HASH ON Region (rname);
 
 -- Create a query to determine which sub_genres come from which regions.
 SELECT DISTINCT sg.sgname AS 'Sub Genres', r.rname AS 'Region'
@@ -149,7 +155,6 @@ JOIN Country c ON c.cname = bo.cname
 JOIN Region r ON r.rname = c.rname;
 
 -- Create a query to determine what other bands, not currently in their favorites, are of the same sub_genres as those which are.
-EXPLAIN
 SELECT DISTINCT b.bname AS 'Band'
 FROM Bands b
 JOIN Band_Styles bs ON bs.bname = b.bname
@@ -169,18 +174,18 @@ WHERE b.bname NOT IN (
 ); 
 
 --  Create a query to determine what other bands, not currently in their favorites, are of the same genres as those which are.
- SELECT b.bname AS 'Band'
- FROM Bands b 
- JOIN Band_Styles bs ON bs.bname = b.bname
- JOIN Sub_Genre sg ON sg.sgname = bs.sgname
- JOIN Genre g ON g.gname = sg.gname 
- WHERE b.bname NOT IN (
+SELECT b.bname AS 'Band'
+FROM Bands b 
+JOIN Band_Styles bs ON bs.bname = b.bname
+JOIN Sub_Genre sg ON sg.sgname = bs.sgname
+JOIN Genre g ON g.gname = sg.gname 
+WHERE b.bname NOT IN (
 	SELECT b.bname
 	FROM `User` u 
 	JOIN Favorites f ON u.uid = f.uid 
 	JOIN Bands b ON b.bid = f.band_id
 	WHERE u.uid = 1
- ) AND g.gname IN (
+) AND g.gname IN (
 	SELECT g.gname
 	FROM `User` u
 	JOIN Favorites f ON u.uid = f.uid 
@@ -189,10 +194,10 @@ WHERE b.bname NOT IN (
 	JOIN Sub_Genre sg ON sg.sgname = bs.sgname
 	JOIN Genre g ON g.gname = sg.gname 
 	WHERE u.uid = 1
- );
+);
 
 -- Create a query which finds other users who have the same band in their favorites, and list their other favorite bands.
-SELECT DISTINCT b.bname AS 'Band'
+SELECT DISTINCT b.bname AS 'Band', u.uid AS 'User Id'
 FROM Bands b
 JOIN Favorites f ON f.band_id = b.bid
 JOIN `User` u ON u.uid = f.uid
@@ -238,7 +243,6 @@ AND g.gname IN (
 	JOIN Genre g2 ON g2.gname = sg2.gname
 	WHERE u2.uid = 1
 );
-
 
 -- cleanup
 -- DROP TABLE Band_Styles;
