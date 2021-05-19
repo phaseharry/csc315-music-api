@@ -8,7 +8,6 @@ const CONSTANTS = {
     database: 'CSC315Final2021'
 }
 
-
 async function createConnection(){
     try {
         const { host, user, password, database } = CONSTANTS
@@ -138,7 +137,7 @@ async function main(){
         try {
             // check if the band exists 
             const [rows] = await conn.execute(bandExistQuery, [bandName]);
-            if(rows.length <= 0) throw new Error("Band does not exist"); // if it doesn't exist, throw an error
+            if(rows.length <= 0) throw new Error(`Band: ${bandName} does not exist`); // if it doesn't exist, throw an error
             // if it exists, create a favorite relationship that connects it to the user
             const band = rows[0];
             const [row] = await conn.execute(addBandToFavoriteQuery, [userId, band.bid]);
@@ -146,14 +145,13 @@ async function main(){
             return row.insertId;
         } catch (err) {
             console.error(err);
-            return err;
+            //return error;
         }
     }
-    // await addFavoriteBand(1, "Death");
 
-    // Delete a band from favorites;
+    // Delete a band from favorites; 
     async function deleteBandFromFavorite(userId, bandName){
-        const bandExistQuery = "SELECT * FROM Bands b WHERE b.bname = ? LIMIT 1;";
+        const bandExistQuery = "SELECT * FROM Bands b WHERE b.bname = ? ;";
         const doesFavoriteExistQuery = "SELECT * FROM Favorites f WHERE f.uid = ? AND f.band_id = ? ;";
         const deleteFavoriteQuery = "DELETE FROM Favorites WHERE uid = ? AND band_id = ? ;";
         try {
@@ -162,15 +160,38 @@ async function main(){
             if(bands.length <= 0) throw new Error("Band does not exist"); // if it doesn't exist, throw an error
             // if it exists, check if there's a favorite relationship between the user and the band
             const band = bands[0];
-            const [favorites] = await conn.execute(doesFavoriteExistQuery [userId, band.bid]);
+            const [favorites] = await conn.execute(doesFavoriteExistQuery, [userId, band.bid]);
             if(favorites.length <= 0) throw new Error(`User does not have "${band.bname}" as a favorite band.`); // if there's no favorite relationship, throw an error
             // deleting favorite relationship
             await conn.execute(deleteFavoriteQuery, [userId, band.bid]);
         } catch (err) {
             console.error(err);
-            return err;
+            // return err;
         }
     }
+
+    const usersToInsert = [
+        { name: 'Jason Cal', country: 'China' }, 
+        { name: 'Fiona Yam', country: 'United States' },
+        { name: 'Phil Knight', country: 'Mexico' },
+    ];
+    const userIdentifiers = await Promise.all(usersToInsert.map(u => insertUser(u.name, u.country)));
+    await addFavoriteBand(userIdentifiers[0], 'The Hu');
+    await addFavoriteBand(userIdentifiers[0], 'Paul Pena');
+    await addFavoriteBand(userIdentifiers[0], 'Sade');
+    await addFavoriteBand(userIdentifiers[0], 'Fake Band Test'); // band does not exist test
+    await addFavoriteBand(userIdentifiers[1], 'Muddy Waters');
+    await addFavoriteBand(userIdentifiers[1], 'Tengger Cavalry');
+    await addFavoriteBand(userIdentifiers[1], 'Twisted Sister');
+    await addFavoriteBand(userIdentifiers[1], 'Seputura');
+    await addFavoriteBand(userIdentifiers[2], 'The Guess Who');
+    await addFavoriteBand(userIdentifiers[2], 'Led Zeppelin');
+    await addFavoriteBand(userIdentifiers[2], 'Mozart');
+    await addFavoriteBand(userIdentifiers[2], 'Seputura');
+    // deleting a favorite from users
+    await deleteBandFromFavorite(userIdentifiers[0], 'Sade');
+    await deleteBandFromFavorite(userIdentifiers[1], 'Sade'); // fake favorite band test
+
     await endConnection(conn);
 }
 
